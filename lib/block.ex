@@ -37,12 +37,12 @@ defmodule Block do
     |> String.starts_with?("AAA")
   end
 
-  def make_hash(message) do
+  defp make_hash(message) do
     :crypto.hash(:sha256, message)
     |> Base.encode32
   end
 
-  def increment(string) do
+  defp increment(string) do
     new_val = Enum.random(35..122)
 
     string <> <<new_val>>
