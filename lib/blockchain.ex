@@ -3,16 +3,26 @@ defmodule BlockChain do
   Documentation for BlockChain.
   """
 
-  @doc """
-  Hello world.
+  defstruct blocks: [], prev_block_hash: nil
 
-  ## Examples
+  def main(arg) when is_bitstring(arg) do
+    %BlockChain{ prev_block_hash: arg }
+    |> add_block
+  end
 
-      iex> BlockChain.hello
-      :world
+  def main(arg) do
+    arg |> add_block
+  end
 
-  """
-  def hello do
-    :world
+  defp add_block(blockchain = %BlockChain{ prev_block_hash: hash }) do
+    Block.main(hash)
+    |> add_block_to_chain(blockchain)
+  end
+
+  defp add_block_to_chain(
+    block = %Block{ message: hash },
+    %BlockChain{ blocks: blocks }
+  ) do
+    %BlockChain{ blocks: [block | blocks], prev_block_hash: hash }
   end
 end

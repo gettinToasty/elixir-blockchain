@@ -3,7 +3,7 @@ defmodule Block do
   Documentation for Block.
   """
 
-  defstruct message: nil, nonce: "", parent: nil, valid: false, iterations: 0
+  defstruct message: nil, nonce: <<Enum.random(35..122)>>, parent: nil, valid: false, iterations: 0
 
   def main(message, parent) do
     initialize_block(message, parent)
@@ -27,13 +27,13 @@ defmodule Block do
     count = count + 1
     cond do
       valid_nonce?(message, nonce) ->
-        %{ block | iterations: count, valid: true, message: message <> nonce, nonce: nil }
+        %{ block | iterations: count, valid: true, message: nonce <> message, nonce: nil }
       true -> find_nonce(%{ block | nonce: increment(nonce) }, count)
     end
   end
 
   defp valid_nonce?(message, nonce) do
-    make_hash(message <> nonce)
+    make_hash(nonce <> message)
     |> String.starts_with?("AAA")
   end
 
@@ -45,6 +45,6 @@ defmodule Block do
   defp increment(string) do
     new_val = Enum.random(35..122)
 
-    string <> <<new_val>>
+    <<new_val>> <> string
   end
 end
