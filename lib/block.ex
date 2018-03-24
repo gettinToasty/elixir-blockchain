@@ -3,48 +3,49 @@ defmodule Block do
   Documentation for Block.
   """
 
-  defstruct message: nil, nonce: <<Enum.random(35..122)>>, parent: nil, valid: false, iterations: 0
+  defstruct hash: nil, nonce: <<Enum.random(35..122)>>, parent: nil, valid: false, iterations: 0
 
-  def main(message, parent) do
-    initialize_block(message, parent)
+  def main(hash, parent) do
+    initialize_block(hash, parent)
     |> find_nonce
   end
 
-  def main(message) do
-    initialize_block(message)
+  def main(hash) do
+    initialize_block(hash)
     |> find_nonce
   end
 
-  defp initialize_block(message) do
-    %Block{ message: message }
+  defp initialize_block(hash) do
+    %Block{ hash: hash }
   end
 
-  defp initialize_block(message, parent) do
-    %Block{ message: message, parent: parent }
+  defp initialize_block(hash, parent) do
+    %Block{ hash: hash, parent: parent }
   end
 
-  defp find_nonce(block = %Block{ message: message, nonce: nonce }, count \\ 0) do
+  defp find_nonce(block = %Block{ hash: hash, nonce: nonce }, count \\ 0) do
     count = count + 1
     cond do
-      valid_nonce?(message, nonce) ->
-        %{ block | iterations: count, valid: true, message: nonce <> message, nonce: nil }
+      valid_nonce?(hash, nonce) ->
+        %{ block | iterations: count, valid: true, hash: make_hash(hash <> nonce) }
       true -> find_nonce(%{ block | nonce: increment(nonce) }, count)
     end
   end
 
-  defp valid_nonce?(message, nonce) do
-    make_hash(nonce <> message)
+  defp valid_nonce?(hash, nonce) do
+    make_hash(hash <> nonce)
+    |> IO.inspect
     |> String.starts_with?("AAA")
   end
 
-  defp make_hash(message) do
-    :crypto.hash(:sha256, message)
+  defp make_hash(hash) do
+    :crypto.hash(:sha256, hash)
     |> Base.encode32
   end
 
   defp increment(string) do
     new_val = Enum.random(35..122)
 
-    <<new_val>> <> string
+    string <> <<new_val>>
   end
 end

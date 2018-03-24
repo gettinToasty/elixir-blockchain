@@ -20,7 +20,7 @@ defmodule BlockChain do
   end
 
   defp add_block_to_chain(
-    block = %Block{ message: hash },
+    block = %Block{ hash: hash },
     %BlockChain{ blocks: blocks }
   ) do
     %BlockChain{ blocks: [block | blocks], prev_block_hash: hash }
