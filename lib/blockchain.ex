@@ -3,23 +3,38 @@ defmodule BlockChain do
   Documentation for BlockChain.
   """
 
-  defstruct blocks: [], prev_block_hash: nil
+  defstruct blocks: [], message: nil
 
-  def main(arg) when is_bitstring(arg) do
-    %BlockChain{ prev_block_hash: arg }
-    |> add_block
+  def main(message) do
+    %BlockChain{ message: message } |> add_block
   end
 
-  def main(arg) do
-    arg |> add_block
+  def main(message, chain) do
+    %{ chain | message: message } |> add_block
   end
 
-  defp add_block(blockchain = %BlockChain{ prev_block_hash: hash }) do
-    Block.main(hash)
-    |> add_block_to_chain(blockchain)
+  def valid?(chain) do
+    all_blocks_valid?(chain) and all_blocks_sequential?(chain)
   end
 
-  defp add_block_to_chain(block = %Block{ hash: hash }, %BlockChain{ blocks: blocks }) do
-    %BlockChain{ blocks: [block | blocks], prev_block_hash: hash }
+  defp add_block(blockchain = %BlockChain{ message: message, blocks: [] }) do
+    Block.main(message) |> add_block_to_chain(blockchain)
+  end
+  defp add_block(blockchain = %BlockChain{ message: message, blocks: [head | _rest] }) do
+    Block.main(message, head.hash) |> add_block_to_chain(blockchain)
+  end
+
+  defp add_block_to_chain(block, %BlockChain{ blocks: blocks }) do
+    %BlockChain{ blocks: [block | blocks], message: nil }
+  end
+
+  defp all_blocks_valid?(chain) do
+    chain.blocks |> Enum.all?(fn(block = %Block{}) -> Block.valid?(block) end)
+  end
+
+  defp all_blocks_sequential?(chain) do
+    chain.blocks
+    |> Enum.chunk(2, 1)
+    |> Enum.all?(fn([child, parent]) -> child.parent == parent.hash end)
   end
 end
