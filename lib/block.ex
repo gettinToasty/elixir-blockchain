@@ -23,6 +23,10 @@ defmodule Block do
     block |> hashable |> make_hash |> valid_nonce?
   end
 
+  def message_in_block?(block, message) do
+    make_hash(message) === block.hashed_message
+  end
+
   defp initialize_block(message) do
     %Block{ hashed_message: make_hash(message) }
   end
